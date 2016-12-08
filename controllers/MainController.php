@@ -18,20 +18,48 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class MainController extends Controller{
+namespace humhub\modules\bulk_import\controllers;
 
-	public $subLayout = "application.modules_core.admin.views._layout";
+use humhub\modules\admin\models\UserSearch;
+use humhub\modules\karma\models\Karma;
+use humhub\modules\karma\models\KarmaSearch;
+use Yii;
+use humhub\modules\bulk_import\forms\BulkImportForm;
+use humhub\modules\user\models\User;
+use humhub\modules\user\models\Password;
+use humhub\modules\space\models\Space;
+use yii\helpers\Html;
+use humhub\libs\ProfileImage;
+
+class MainController extends \humhub\modules\admin\components\Controller
+{
+
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'acl' => [
+                'class' => \humhub\components\behaviors\AccessControl::className(),
+                'adminOnly' => true
+            ]
+        ];
+    }
 
 	/** 
 	 * Registers a user
-	 * @param array data
+	 * @param $data
+     * @return Bool
 	 */
 	private function registerUser($data) {
 
-        $userModel = new User('register');
-        $userPasswordModel = new UserPassword();
+        $userModel = new User();
+        $userModel->scenario = 'registration';
+
         $profileModel = $userModel->profile;
-        $profileModel->scenario = 'register';
+        $profileModel->scenario = 'registration';
 
         // User: Set values
         $userModel->username = $data['username'];
@@ -45,23 +73,24 @@ class MainController extends Controller{
 		
 
 		// Password: Set values
-        $userPasswordModel->setPassword($data['password']);
+		$userPasswordModel = new Password();
+		$userPasswordModel->setPassword($data['password']);
 
         if($userModel->save()) {
-	        
+
 	        // Save user profile
 			$profileModel->user_id = $userModel->id;
 			$profileModel->save();
 
 			// Save user password
-	        $userPasswordModel->user_id = $userModel->id;
+			$userPasswordModel->user_id = $userModel->id;
 			$userPasswordModel->save();
 
 			// Join space / create then join space 
 			foreach ($data['space_names'] as $key => $space_name) {
 
 				// Find space by name attribute
-				$space = Space::model()->findByAttributes(array('name'=>$space_name));
+                $space = Space::findOne(['name'=>$space_name]);
 
 				// Create the space if not found
 				if($space == null) {
@@ -78,7 +107,7 @@ class MainController extends Controller{
 			return true;
 
         } else {
-        	Yii::app()->user->setFlash('error', CHtml::errorSummary($userModel));
+            Yii::$app->session->setFlash('error', Html::errorSummary($userModel));
         	return false;
         }
 
@@ -86,7 +115,10 @@ class MainController extends Controller{
 
     public function actionIndex(){
     	$form = new BulkImportForm;
-        $this->render('index', array('model' => $form));
+
+        return $this->render('index', array(
+            'model' => $form
+        ));
     }
 
     public function actionSetDefaultPass() {
@@ -95,8 +127,8 @@ class MainController extends Controller{
     		$user_ids = explode(",", $_GET['user_ids']);
 
 	    	foreach($user_ids as $user_id) {
-	        	$userPasswordModel = new UserPassword();
-	        	$userPasswordModel->user_id = 1;
+	        	$userPasswordModel = new Password();
+	        	$userPasswordModel->user_id = $user_id;
 		        $userPasswordModel->setPassword("password");
 		        
 		        if($userPasswordModel->save()) {
@@ -113,11 +145,9 @@ class MainController extends Controller{
 
     public function actionIdenticon() {
 
-        $assetPrefix = Yii::app()->assetManager->publish(dirname(__FILE__) . '/../resources', true, 0, defined('YII_DEBUG'));
-        Yii::app()->clientScript->registerScriptFile($assetPrefix . '/md5.min.js');
-        Yii::app()->clientScript->registerScriptFile($assetPrefix . '/jdenticon-1.3.0.min.js');
-		
-		$model = new User('search');
+//        $assetPrefix = Yii::app()->assetManager->publish(dirname(__FILE__) . '/../assets', true, 0, defined('YII_DEBUG'));
+//        Yii::app()->clientScript->registerScriptFile($assetPrefix . '/md5.min.js');
+//        Yii::app()->clientScript->registerScriptFile($assetPrefix . '/jdenticon-1.3.0.min.js');
 
 		if(isset($_POST['userids'])) {
 
@@ -125,28 +155,31 @@ class MainController extends Controller{
 			foreach($_POST['userids'] as $user_id) {
 
 				// Find User by ID
-				$user = User::model()->findByPk($user_id);
+				$user = User::findIdentity($user_id);
 
 				// Upload new profile picture
 				$this->uploadProfilePicture($user->guid, $_POST['identicon_'.$user_id.'_value']);
 
 			}
 		}
-        	
-    	$this->render('identicon', array(
-    		'model' => $model
-    	));
+
+        $searchModel = new \humhub\modules\admin\models\UserSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('identicon', array(
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel
+        ));
+
     }
 
 	public function actionUpload() {
 	    
-        $assetPrefix = Yii::app()->assetManager->publish(dirname(__FILE__) . '/../resources', true, 0, defined('YII_DEBUG'));
-        Yii::app()->clientScript->registerScriptFile($assetPrefix . '/md5.min.js');
-        Yii::app()->clientScript->registerScriptFile($assetPrefix . '/jdenticon-1.3.0.min.js');
-
-
-	    require_once("lib/parsecsv.lib.php");
-		$csv = new parseCSV();
+//        $assetPrefix = Yii::$app->assetManager->publish(dirname(__FILE__) . '/../assets', array('forceCopy' => true));
+//        Yii::$app->clientScript->registerScriptFile($assetPrefix . '/md5.min.js');
+//        Yii::$app->clientScript->registerScriptFile($assetPrefix . '/jdenticon-1.3.0.min.js');
+		require_once(dirname(__FILE__) . "/../lib/parsecsv.lib.php");
+        $csv = new \parseCSV();
 	    $model = new BulkImportForm;
 
 	    $validImports = array();
@@ -154,10 +187,12 @@ class MainController extends Controller{
 
 	    if(isset($_POST['BulkImportForm']))
 	    {
+
 	        $model->attributes=$_POST['BulkImportForm'];
 	        if(!empty($_FILES['BulkImportForm']['tmp_name']['csv_file']))
 	        {
-	            $file = CUploadedFile::getInstance($model,'csv_file');
+
+	            $file = \yii\web\UploadedFile::getInstance($model,'csv_file');
 	            $group_id = 1;
 
 				$csv->auto($file->tempName);
@@ -196,7 +231,10 @@ class MainController extends Controller{
 
 	    }
 
-	    $this->render('import_complete', array('validImports' => $validImports, 'invalidImports' => $invalidImports));
+        return $this->render('import_complete', array(
+            'validImports' => $validImports,
+            'invalidImports' => $invalidImports,
+        ));
 
 	}
 
@@ -219,7 +257,7 @@ class MainController extends Controller{
         $profileImage = new ProfileImage($userId);
         $profileImage->setNew($temp_file_name);
 
-        // Remove temporary file 
+        // Remove temporary file
         unlink($temp_file_name);
 
     }

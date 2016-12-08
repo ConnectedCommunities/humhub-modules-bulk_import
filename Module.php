@@ -18,14 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Yii::app()->moduleManager->register(array(
-    'id' => 'bulk_import',
-    'class' => 'application.modules.bulk_import.BulkImportModule',
-    'import' => array(
-        'application.modules.bulk_import.*',
-    ),
-    'events' => array(
-    	array('class' => 'AdminMenuWidget', 'event' => 'onInit', 'callback' => array('BulkImportEvents', 'onAdminMenuInit')),
-    ),
-));
-?>
+namespace humhub\modules\bulk_import;
+
+class Module extends \humhub\components\Module {
+
+}

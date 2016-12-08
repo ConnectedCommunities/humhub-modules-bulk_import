@@ -21,7 +21,7 @@
     <div class="panel-heading"><strong>Bulk</strong> Import</div>
     <div class="panel-body">
         <?php 
-        $flashes = Yii::app()->user->getFlashes();
+        $flashes = Yii::$app->session->getAllFlashes();
 
         if(!empty($flashes)) {
             echo "<div class=\"well\">";
@@ -34,7 +34,6 @@
 
             echo "</div>";
         }
-
         ?>
 
         <h5>Failed Imports</h5>

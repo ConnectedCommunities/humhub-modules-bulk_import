@@ -16,11 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
+use yii\helpers\Url;
+use yii\helpers\Html;
+use yii\grid\GridView;
+use yii\data\ActiveDataProvider;
+use yii\widgets\ActiveForm;
+use humhub\widgets\DataSaved;
+
+humhub\modules\bulk_import\Assets::register($this);
 ?>
-
-
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jdenticon/1.3.2/jdenticon.min.js"></script>
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.3.0/js/md5.min.js"></script>
 
 <script>
     
@@ -35,14 +41,15 @@
     $(function() {
         renderJdenticons();    
     });
+
 </script>
-<?php 
-$form=$this->beginWidget('CActiveForm', array(
+
+<?php $form = ActiveForm::begin(array(
     'id'=>'registration-form',
-    'enableAjaxValidation'=>true,
-    'action' => Yii::app()->createUrl('//bulk_import/main/identicon')
-)); 
-?>
+    'enableAjaxValidation'=>false,
+    'action' => Url::to(['/bulk_import/main/identicon'])
+)); ?>
+
 <div class="panel panel-default">
     <div class="panel-heading"><?php echo Yii::t('AdminModule.views_user_index', '<strong>Identicon</strong> uploader'); ?></div>
     <div class="panel-body">
@@ -51,7 +58,42 @@ $form=$this->beginWidget('CActiveForm', array(
         </p>
 
         <?php
-        $this->widget('zii.widgets.grid.CGridView', array(
+        echo GridView::widget([
+            'dataProvider' => $dataProvider,
+            'filterModel' => $searchModel,
+            'columns' => [
+                array(
+                    'class' => 'yii\grid\CheckboxColumn',
+                    'checkboxOptions' => function ($model, $key, $index, $column) {
+                        return [
+                            'value' => $model->id
+                        ];
+                    },
+                    'name' => 'userids'
+                ),
+                'username',
+                'email',
+                array(
+                    'attribute' => 'Old',
+                    'format' => 'raw',
+                    'options' => array('width' => '35px'),
+                    'value' => function($model) {
+                        return Html::img($model->profileImage->getUrl(), array("style" => "width:35px; height: 35px; background-color:#000;"));
+                    }
+                ),
+                array(
+                    'attribute' => 'New',
+                    'format' => 'raw',
+                    'options' => array('width' => '35px'),
+                    'value' => function($model) {
+                        return '<canvas class="identicon" id="identicon_'.$model['id'].'" data-to-hash="'.$model['email'].'" width="35" height="35" /></canvas><input type="hidden" id="identicon_'.$model['id'].'_value" name="identicon_'.$model['id'].'_value" />';
+                    }
+                ),
+
+            ]
+        ]);
+
+        /*$this->widget('zii.widgets.grid.CGridView', array(
             'id' => 'user-grid',
             'dataProvider' => $model->resetScope()->search(),
             'filter' => $model,
@@ -105,12 +147,13 @@ $form=$this->beginWidget('CActiveForm', array(
             ),
             'pagerCssClass' => 'pagination-container',
         ));
-
+           */
         ?>
-
+        <?php echo Html::submitButton('Upload Identicons', array('class' => 'btn btn-primary pull-right')); ?>
     </div>
 </div>
-<div class="form-group-buttons buttons" style="margin-top:-86px; margin-right:10px; position:relative; z-index:1000">
-<?php  echo CHtml::submitButton('Upload Identicons',array("class"=>"btn btn-primary pull-right")); ?>
-</div>
-<?php $this->endWidget(); ?>
+
+<?php $form->end(); ?>
+
+
+

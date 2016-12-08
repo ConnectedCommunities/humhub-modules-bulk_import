@@ -16,29 +16,28 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
+use yii\helpers\Url;
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
 ?>
 <div class="panel panel-default">
     <div class="panel-heading"><strong>Bulk</strong> Import</div>
     <div class="panel-body">
         <h4>Upload CSV</h4>
         <div class="well">
-        <?php 
-        $form=$this->beginWidget('CActiveForm', array(
+        <?php $form = ActiveForm::begin(array(
             'id'=>'registration-form',
             'enableAjaxValidation'=>true,
-            'htmlOptions' => array('enctype' => 'multipart/form-data'),
-            'action' => Yii::app()->createUrl('//bulk_import/main/upload')
-
-        )); 
-        ?>
-
-        <?php echo $form->fileField($model,'csv_file'); ?>
-        <?php echo $form->error($model, 'csv_file'); ?>
-        <br />
-        <?php  echo CHtml::submitButton('Upload CSV',array("class"=>"")); ?>
+            'options' => array('enctype' => 'multipart/form-data'),
+            'action' => Url::to(['/bulk_import/main/upload'])
+        )); ?>
         <?php echo $form->errorSummary($model); ?>
-
-        <?php $this->endWidget(); ?>
+        <?php echo $form->field($model,'csv_file')->fileInput(); ?>
+        <br />
+        <?php echo Html::submitButton('Upload CSV', array('class' => '')); ?>
+        <?php $form->end(); ?>
         </div>
 
         <br />
@@ -58,6 +57,7 @@
             <tr>
                 <td><b>username</b></td>
                 <td><b>email</b></td>
+                <td><b>password</b></td>
                 <td><b>firstname</b></td>
                 <td><b>lastname</b></td>
                 <td><b>space_names</b></td>
@@ -65,6 +65,7 @@
             <tr>
                 <td>user1</td>
                 <td>user1@example.com</td>
+                <td>test123</td>
                 <td>User</td>
                 <td>Wan</td>
                 <td>Space 1</td>
@@ -72,6 +73,7 @@
             <tr>
                 <td>user2</td>
                 <td>user2@example.com</td>
+                <td>test123</td>
                 <td>User</td>
                 <td>Two</td>
                 <td>Space 1,Space 2</td>

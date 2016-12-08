@@ -18,8 +18,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class BulkImportEvents {
+namespace humhub\modules\bulk_import;
 
+use Yii;
+use yii\helpers\Url;
+
+
+class Events extends \yii\base\Object
+{
+    /**
+     * Defines what to do if admin menu is initialized.
+     *
+     * @param type $event
+     */
     /**
      * Defines what to do if admin menu is initialized.
      *
@@ -27,23 +38,25 @@ class BulkImportEvents {
      */
     public static function onAdminMenuInit($event)
     {
+
         $event->sender->addItem(array(
             'label' => Yii::t('BulkImportModule.base', 'Bulk Import'),
-            'url' => Yii::app()->createUrl('//bulk_import/main/index'),
+            'url' => Url::to(['/bulk_import/main/index']),
             'group' => 'manage',
             'icon' => '<i class="fa fa-paw"></i>',
-            'isActive' => (Yii::app()->controller->module && Yii::app()->controller->module->id == 'bulk_import' && Yii::app()->controller->id == 'admin'),
+            'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'bulk_import' && Yii::$app->controller->id == 'admin'),
             'sortOrder' => 700,
         ));
 
         $event->sender->addItem(array(
             'label' => Yii::t('BulkImportModule.base', 'Bulk Import Identicons'),
-            'url' => Yii::app()->createUrl('//bulk_import/main/identicon'),
+            'url' => Url::to(['/bulk_import/main/identicon']),
             'group' => 'manage',
             'icon' => '<i class="fa fa-paw"></i>',
-            'isActive' => (Yii::app()->controller->module && Yii::app()->controller->module->id == 'bulk_import' && Yii::app()->controller->id == 'admin'),
+            'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'bulk_import' && Yii::$app->controller->id == 'admin'),
             'sortOrder' => 700,
         ));
+
     }
 
 }

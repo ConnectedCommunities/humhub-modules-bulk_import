@@ -18,11 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+namespace humhub\modules\bulk_import\forms;
+
+use Yii;
+
 /**
- * @package humhub.modules_core.admin.forms
+ * @package humhub.modules.bulk_import.forms
  * @since 0.5
  */
-class BulkImportForm extends CFormModel {
+class BulkImportForm extends \yii\base\Model {
 
     public $csv_file;
 
@@ -30,10 +34,13 @@ class BulkImportForm extends CFormModel {
      * Declares the validation rules.
      */
     public function rules() {
-        return array(
+        /*return array(
             array('csv_file', 'file', 'types' => 'csv, xls', 'maxSize'=>5242880, 'allowEmpty' => true, 'wrongType'=>'Only .csv, .xls files are allowed.', 'tooLarge'=>'File too large! 5MB is the limit')
             // array('logo', 'file', 'types' => 'jpg, png, jpeg', 'maxSize' => 3 * 1024 * 1024, 'allowEmpty' => true),
-        );
+        );*/
+        return [
+            [['cvs_file'], 'file'],
+        ];
     }
 
     /**

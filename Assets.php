@@ -18,17 +18,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class BulkImportModule extends HWebModule{
-    
-    /**
-     * Inits the Module
-     */
+namespace humhub\modules\bulk_import;
+
+use yii\web\AssetBundle;
+
+class Assets extends AssetBundle
+{
+    public $js = [
+        '//cdn.jsdelivr.net/jdenticon/1.3.2/jdenticon.min.js',
+        '//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.3.0/js/md5.min.js'
+    ];
+
     public function init()
     {
-
-        $this->setImport(array(
-            'bulk_import.forms.*',
-        ));
+        // $this->sourcePath = dirname(__FILE__) . '/assets';
+        parent::init();
     }
-    
 }
