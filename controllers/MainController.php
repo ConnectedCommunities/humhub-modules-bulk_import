@@ -64,7 +64,7 @@ class MainController extends \humhub\modules\admin\components\Controller
         // User: Set values
         $userModel->username = $data['username'];
         $userModel->email = $data['email'];
-        $userModel->group_id = $data['group_id'];
+        //$userModel->group_id = $data['group_id'];
         $userModel->status = User::STATUS_ENABLED;
 
 	    // Profile: Set values
@@ -193,12 +193,10 @@ class MainController extends \humhub\modules\admin\components\Controller
 	        {
 
 	            $file = \yii\web\UploadedFile::getInstance($model,'csv_file');
-	            $group_id = 1;
+	            //$group_id = 1;
 
 				$csv->auto($file->tempName);
-
 				foreach($csv->data as $data) {
-
 					// Make a username from the first and last names if username is mising
 					if(empty($data['username'])) {
 						// $data['username'] = substr(str_replace(" ", "_", strtolower(trim($data['firstname']) . "_" . trim($data['lastname']))), 0, 25);
@@ -206,6 +204,10 @@ class MainController extends \humhub\modules\admin\components\Controller
 					}
 
 					// Put data into correct format
+				$space_names = array("Default"); //If we don't set an array with at least one element an exception is thrown further down the line.
+				if (array_key_exists('space_names', $data)){
+			    		$space_names = explode(",", $data['space_names']);
+				}
 			    	$importData = array(
 			    		'username' => $data['username'],
 			    		'password' => $data['password'], 
@@ -213,10 +215,10 @@ class MainController extends \humhub\modules\admin\components\Controller
 						'firstname' => $data['firstname'],
 			    		'lastname' => $data['lastname'], 
 			    		'email' => $data['email'],
-
-			    		'space_names' => explode(",", $data['space_names']),
-			    		'group_id' => $group_id,
+			    	//	'group_id' => $group_id,
+					'space_names' => $space_names,
 			    	);
+
 
 			    	// Register user
 			    	if($this->registerUser($importData)) {
